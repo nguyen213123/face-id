@@ -1,190 +1,130 @@
 from PyQt6 import QtGui, QtWidgets, QtCore
-from pathlib import Path, PurePath
+from pathlib import Path
 import sys
-import Home
-import QuanLySinhVien
-import QuanLyBuoiHoc
+import os
 import NhanDien
 import QuanLyDiemDanh
 import ThongKe
-import QuanLyGiangVien
-import QuanLyTaiKhoan
-import Login
 import qdarkstyle
-from BUS.Quyen_ChucNangBUS import Quyen_ChucNangBUS
-from PyQt6.QtCore import QCoreApplication
-maquyen = ''
-email = ''
-password = ''
-class mainGUI():
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()        
-    ui = ''
-    DarkMode = True
-    def __init__(self, email, password, maquyen):
-        self.email = email
-        self.password = password
-        self.maquyen = maquyen
-        
-        
-    def listChangeStyleSheet_MD(self):
-        self.ui.btnDark.setIcon(QtGui.QIcon("image/icon/moon_symbol_50px.png"))
-        self.ui.btnTime.setIcon(QtGui.QIcon("image/icon/time_20px.png"))    
-        self.app.setStyleSheet(Path(
-            r"qss\py_md_style.qss").read_text())        
 
 
-    def listChangeStyleSheet_Dark(self):
-        self.ui.btnDark.setIcon(QtGui.QIcon("image/icon/sun_50px.png"))
-        self.ui.btnTime.setIcon(QtGui.QIcon("image/icon/time_white_20px.png"))
-        self.app.setStyleSheet(Path(
-                r"qss\py_dark_style.qss").read_text())
-        
+def get_project_root():
+    """Get the root directory of the project"""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_qss_path(qss_name):
+    """Get absolute path for QSS stylesheet"""
+    return os.path.join(get_project_root(), "qss", qss_name)
+
+
+class SimpleAttendanceApp:
+    """Simple Face ID Attendance Application"""
     
-
-
-    def ChangeStyleDarkMode(self):
-        if self.DarkMode:
-            self.listChangeStyleSheet_MD()
-        else:
-            self.listChangeStyleSheet_Dark()
-
-
-    def ChangeDarkMode_UI(self):
-        if self.DarkMode:
-            self.listChangeStyleSheet_Dark()      
-            self.DarkMode = False
-        else:
-            self.listChangeStyleSheet_MD()       
-            self.DarkMode = True
-    def mainUi(self, MainWindow ,page):
-        self.ui = Home.UI_Home(self.email, self.password)
-        self.MainWindow = MainWindow
+    def __init__(self):
+        self.app = QtWidgets.QApplication(sys.argv)
+        self.main_window = QtWidgets.QMainWindow()
+        self.main_window.setWindowTitle("Face ID Attendance System")
+        self.main_window.setGeometry(100, 100, 1000, 700)
+        self.dark_mode = True
+        self.create_main_menu()
         
-        self.ui.setupUi(MainWindow)
+    def create_main_menu(self):
+        """Create main menu with 3 buttons"""
+        central_widget = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout()
+        
+        # Title
+        title = QtWidgets.QLabel("Face ID Attendance System")
+        title_font = QtGui.QFont()
+        title_font.setPointSize(28)
+        title_font.setBold(True)
+        title.setFont(title_font)
+        title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("margin: 30px; color: #333;")
+        layout.addWidget(title)
+        
+        # Spacer
+        layout.addSpacing(30)
+        
+        # Buttons layout
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.setSpacing(20)
+        
+        # Face Recognition Button
+        btn_face = QtWidgets.QPushButton("📸 Face Recognition")
+        btn_face.setMinimumSize(250, 120)
+        btn_face.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Weight.Bold))
+        btn_face.clicked.connect(self.open_face_recognition)
+        buttons_layout.addWidget(btn_face)
+        
+        # Attendance Button
+        btn_attendance = QtWidgets.QPushButton("📋 Attendance")
+        btn_attendance.setMinimumSize(250, 120)
+        btn_attendance.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Weight.Bold))
+        btn_attendance.clicked.connect(self.open_attendance)
+        buttons_layout.addWidget(btn_attendance)
+        
+        # Statistics Button
+        btn_stats = QtWidgets.QPushButton("📊 Statistics")
+        btn_stats.setMinimumSize(250, 120)
+        btn_stats.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Weight.Bold))
+        btn_stats.clicked.connect(self.open_statistics)
+        buttons_layout.addWidget(btn_stats)
+        
+        layout.addLayout(buttons_layout)
+        layout.addStretch()
+        
+        central_widget.setLayout(layout)
+        self.main_window.setCentralWidget(central_widget)
+        self.apply_stylesheet()
+        
+    def open_face_recognition(self):
+        """Open Face Recognition UI"""
+        try:
+            self.ui = NhanDien.UI_NhanDien()
+            self.ui.setupUi(self.main_window)
+            self.apply_stylesheet()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self.main_window, "Error", f"Failed to load Face Recognition: {e}")
+        
+    def open_attendance(self):
+        """Open Attendance Management UI"""
+        try:
+            self.ui = QuanLyDiemDanh.UI_QuanLyDiemDanh()
+            self.ui.setupUi(self.main_window)
+            self.apply_stylesheet()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self.main_window, "Error", f"Failed to load Attendance: {e}")
+        
+    def open_statistics(self):
+        """Open Statistics UI"""
+        try:
+            self.ui = ThongKe.UI_ThongKe()
+            self.ui.setupUi(self.main_window)
+            self.apply_stylesheet()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self.main_window, "Error", f"Failed to load Statistics: {e}")
+        
+    def apply_stylesheet(self):
+        """Apply stylesheet"""
+        try:
+            qss_path = get_qss_path("py_md_style.qss")
+            with open(qss_path, 'r', encoding='utf-8') as f:
+                self.app.setStyleSheet(f.read())
+        except Exception as e:
+            print(f"Warning: Could not load stylesheet: {e}")
     
-        if page == "home":
-            self.ui.stackedWidget.setCurrentWidget(self.ui.pageHome)
-        elif page == "ql":
-            self.ui.stackedWidget.setCurrentWidget(self.ui.pageQL)
-        elif page == "mk":
-            self.ui.stackedWidget.setCurrentWidget(self.ui.pageMK)
-        self.checkFunctionInPermission(self.maquyen)
-        # Chọn minimize
-        self.ui.btnMinimize.clicked.connect(self.showMinimized)
-        # Chọn close
-        self.ui.btnClose.clicked.connect(lambda: sys.exit(self.app.exit()))
-        # Chọn trang chủ
-        self.ui.btnTrangChu.clicked.connect(self.Home_UI)
-        # Chọn quản lý
-        self.ui.btnQuanLy.clicked.connect(self.QuanLy_UI)
-        # Chọn nhận diện
-        self.ui.btnNhanDien.clicked.connect(lambda: self.NhanDien_UI(MainWindow))
-        # Chọn mật khẩu
-        self.ui.btnMatKhau.clicked.connect(self.MatKhau_UI)
-        # Chọn thống kê
-        self.ui.btnThongKe.clicked.connect(lambda: self.ThongKe_UI(MainWindow))
-        # Chọn tài khoản
-        self.ui.btnTaiKhoan.clicked.connect(lambda: self.TaiKhoan_UI(MainWindow))
-        #############################################
-        # QUẢN LÝ
-        #############################################
-        # Chọn quản lý sinh viên
-        self.ui.btnQLSV.clicked.connect(lambda: self.QLSV_UI(MainWindow))
-        # Chọn quản lý buổi học
-        self.ui.btnBuoiHoc.clicked.connect(lambda: self.QLBuoiHoc_UI(MainWindow))
-        # Chọn quản lý điểm danh
-        self.ui.btnDiemDanh.clicked.connect(lambda: self.QLDiemDanh_UI(MainWindow))
-        # Chọn giảng viên
-        self.ui.btnGiangVien.clicked.connect(lambda: self.QLGiangVien_UI(MainWindow))
-        # Chọn logout
-        self.ui.btnLogout.clicked.connect(lambda: self.logout(MainWindow))
-        # Dark-Light Mode
-        self.ChangeStyleDarkMode()
-        self.ui.btnDark.clicked.connect(self.ChangeDarkMode_UI)
-    
-        MainWindow.show()
+    def run(self):
+        """Run the application"""
+        self.main_window.show()
+        sys.exit(self.app.exec())
 
 
-    def showMinimized(self):
-        MainWindow.showMinimized()
+if __name__ == "__main__":
+    app = SimpleAttendanceApp()
+    app.run()
 
-
-    def Home_UI(self):
-        self.ui.stackedWidget.setCurrentWidget(self.ui.pageHome)
-
-
-    def QuanLy_UI(self):
-        self.ui.stackedWidget.setCurrentWidget(self.ui.pageQL)
-
-
-    def MatKhau_UI(self):
-        self.ui.stackedWidget.setCurrentWidget(self.ui.pageMK)
-
-
-    def QLSV_UI(self, MainWindow):
-        self.ui = QuanLySinhVien.UI_QuanLySinhVien()
-        self.MainWindow = MainWindow
-        self.ui.setupUi(MainWindow)
-        # Chọn minimize
-        self.ui.btnMinimize.clicked.connect(self.showMinimized)
-        # Chọn close
-        self.ui.btnClose.clicked.connect(lambda: sys.exit(self.app.exit()))
-        # Chọn trở về
-        self.ui.btnBack.clicked.connect(lambda: self.mainUi(MainWindow,"ql"))
-        # Dark-Light Mode
-        self.ChangeStyleDarkMode()
-        self.ui.btnDark.clicked.connect(self.ChangeDarkMode_UI)
-        MainWindow.show()
-
-
-    def QLGiangVien_UI(self, MainWindow):        
-        self.ui = QuanLyGiangVien.UI_QuanLyGiangVien()
-        self.MainWindow = MainWindow
-        self.ui.setupUi(MainWindow)
-        # Chọn minimize
-        self.ui.btnMinimize.clicked.connect(self.showMinimized)
-        # Chọn close
-        self.ui.btnClose.clicked.connect(lambda: sys.exit(self.app.exit()))
-        # Chọn trở về
-        self.ui.btnBack.clicked.connect(lambda: self.mainUi(MainWindow,"ql"))
-        # Dark-Light Mode
-        self.ChangeStyleDarkMode()
-        self.ui.btnDark.clicked.connect(self.ChangeDarkMode_UI)
-        MainWindow.show()
-
-
-    def QLBuoiHoc_UI(self, MainWindow):
-        self.ui = QuanLyBuoiHoc.UI_QuanLyBuoiHoc()
-        self.MainWindow = MainWindow
-        self.ui.setupUi(MainWindow)
-        # Chọn minimize
-        self.ui.btnMinimize.clicked.connect(self.showMinimized)
-        # Chọn close
-        self.ui.btnClose.clicked.connect(lambda: sys.exit(self.app.exit()))
-        # Chọn trở về
-        self.ui.btnBack.clicked.connect(lambda: self.mainUi(MainWindow,"ql"))
-        # Dark-Light Mode
-        self.ChangeStyleDarkMode()
-        self.ui.btnDark.clicked.connect(self.ChangeDarkMode_UI)
-        MainWindow.show()
-
-
-    def QLDiemDanh_UI(self, MainWindow):
-        self.ui = QuanLyDiemDanh.UI_QuanLyDiemDanh()
-        self.MainWindow = MainWindow
-        self.ui.setupUi(MainWindow)
-
-        # Chọn minimize
-        self.ui.btnMinimize.clicked.connect(self.showMinimized)
-        # Chọn close
-        self.ui.btnClose.clicked.connect(lambda: sys.exit(self.app.exit()))
-        # Chọn trở về
-        self.ui.btnBack.clicked.connect(lambda: self.mainUi(MainWindow,"ql"))
-        # Dark-Light Mode
-        self.ChangeStyleDarkMode()
-        self.ui.btnDark.clicked.connect(self.ChangeDarkMode_UI)
-        MainWindow.show()
 
         
 
