@@ -631,7 +631,7 @@ class UI_QuanLyDiemDanh(object):
 
                 t = time.localtime()
                 current_time = time.strftime("%H%M%S", t)       
-                tenfile =  "FileExcel\DiemDanh\DiemDanh{}.xlsx".format(current_time)
+                tenfile = r"FileExcel\DiemDanh\DiemDanh{}.xlsx".format(current_time)
                 df.to_excel(tenfile, index=False)
 
                 if(columnHeaders != ""):

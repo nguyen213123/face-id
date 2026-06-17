@@ -712,7 +712,7 @@ class UI_ThongKe(object):
                 current_time = time.strftime("%H%M%S", t) 
 
                 df = pd.DataFrame(x)
-                df.to_excel("FileExcel\ThongKe\Danhsach_SVDiMuon{}.xlsx".format(current_time), engine='xlsxwriter', index=False )
+                df.to_excel(r"FileExcel\ThongKe\Danhsach_SVDiMuon{}.xlsx".format(current_time), engine='xlsxwriter', index=False)
                 QMessageBox.information(self.centralwidget,"Thông báo","Xuất danh sách sinh viên đi muộn thành công!")
 
         def filevang(self):
@@ -728,7 +728,7 @@ class UI_ThongKe(object):
                 current_time = time.strftime("%H%M%S", t) 
 
                 df = pd.DataFrame(x)
-                df.to_excel("FileExcel\ThongKe\Danhsach_SVVang{}.xlsx".format(current_time), engine='xlsxwriter', index=False)
+                df.to_excel(r"FileExcel\ThongKe\Danhsach_SVDiMuon{}.xlsx".format(current_time), engine='xlsxwriter', index=False)
                 QMessageBox.information(self.centralwidget,"Thông báo","Xuất danh sách sinh viên vắng thành công!")
 
 
@@ -744,7 +744,7 @@ class UI_ThongKe(object):
                 current_time = time.strftime("%H%M%S", t) 
 
                 df = pd.DataFrame(x)
-                df.to_excel("FileExcel\ThongKe\Danhsach_SVKhongDiemDanh{}.xlsx".format(current_time), engine='xlsxwriter', index=False)
+                df.to_excel(r"FileExcel\ThongKe\Danhsach_SVDiMuon{}.xlsx".format(current_time), engine='xlsxwriter', index=False)
                 QMessageBox.information(self.centralwidget,"Thông báo","Xuất danh sách sinh viên không điểm danh thành công!")
 
 
