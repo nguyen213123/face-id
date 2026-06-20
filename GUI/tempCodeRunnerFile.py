@@ -144,16 +144,6 @@ class Ui_MainWindow(object):
         self.btnMinimize.clicked.connect(lambda: MainWindow.showMinimized())
         self.btnClose.clicked.connect(QCoreApplication.instance().quit)
         
-        # --- THÊM CHỨC NĂNG ENTER & TỰ ĐỘNG TRỎ CHUỘT ---
-        # 1. Nhấn Enter ở ô Email -> Chuyển con trỏ xuống ô Mật khẩu
-        self.txtEmail.returnPressed.connect(self.txtPassword.setFocus)
-        
-        # 2. Nhấn Enter ở ô Mật khẩu -> Gọi sự kiện click của nút Đăng nhập
-        self.txtPassword.returnPressed.connect(self.btnDangNhap.click)
-        
-        # 3. Tự động trỏ chuột (focus) vào ô Email ngay khi mở giao diện
-        self.txtEmail.setFocus()
-
         MainWindow.setCentralWidget(self.centralwidget)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
