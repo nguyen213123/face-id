@@ -5,21 +5,13 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 # =========================================================
 # XỬ LÝ ĐƯỜNG DẪN ĐỂ IMPORT DATABASE TỪ THƯ MỤC DAL
 # =========================================================
-# Lấy đường dẫn thư mục hiện tại (GUI) và thư mục cha (face-id)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 
-# Thêm thư mục cha vào sys.path để Python tìm thấy thư mục DAL
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
-# Import module kết nối từ thư mục DAL
 from DAL.ConnectDatabase import ConnectDatabase 
-
-# Import các form Thêm mới (Giả sử các file này đang nằm cùng thư mục GUI)
-import ThemSinhVien
-import ThemGiangVien
-import ThemBuoiHoc
 
 class UI_QuanLyChung(QtWidgets.QDialog):
     def __init__(self):
@@ -27,23 +19,19 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         self.setWindowTitle("Quản Lý Hệ Thống Toàn Diện")
         self.setFixedSize(1100, 650)
         
-        # Khởi tạo đối tượng kết nối DB
         self.db = ConnectDatabase()
         
         main_layout = QtWidgets.QVBoxLayout()
         
-        # Tiêu đề
         lblTitle = QtWidgets.QLabel("HỆ THỐNG QUẢN LÝ DỮ LIỆU")
         lblTitle.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Weight.Bold))
         lblTitle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         lblTitle.setStyleSheet("margin-bottom: 10px;")
         main_layout.addWidget(lblTitle)
         
-        # Khởi tạo Tab Widget
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.setFont(QtGui.QFont("Arial", 11))
         
-        # Khởi tạo 3 Tab
         self.tab_sv = QtWidgets.QWidget()
         self.tab_gv = QtWidgets.QWidget()
         self.tab_bh = QtWidgets.QWidget()
@@ -65,31 +53,33 @@ class UI_QuanLyChung(QtWidgets.QDialog):
     def setup_tab_sinhvien(self):
         layout = QtWidgets.QVBoxLayout()
         
-        # Thanh công cụ
         toolbar = QtWidgets.QHBoxLayout()
         btnTaiLai = QtWidgets.QPushButton("🔄 Tải lại danh sách")
         btnTaiLai.clicked.connect(self.load_data_sinhvien)
         
-        btnThem = QtWidgets.QPushButton("➕ Thêm Sinh Viên")
-        btnThem.clicked.connect(self.open_them_sinhvien)
+        # Nút Sửa
+        btnSua = QtWidgets.QPushButton("✏️ Sửa Sinh Viên")
+        btnSua.clicked.connect(self.edit_sinhvien)
+        btnSua.setStyleSheet("background-color: #2196F3; color: white; font-weight: bold;")
         
+        # Nút Xóa
         btnXoa = QtWidgets.QPushButton("❌ Xóa Sinh Viên")
         btnXoa.clicked.connect(self.delete_sinhvien)
         btnXoa.setStyleSheet("background-color: #f44336; color: white; font-weight: bold;")
         
         toolbar.addWidget(btnTaiLai)
-        toolbar.addWidget(btnThem)
+        toolbar.addWidget(btnSua)
         toolbar.addWidget(btnXoa)
         toolbar.addStretch()
         layout.addLayout(toolbar)
         
-        # Bảng dữ liệu
         self.tableSV = QtWidgets.QTableWidget()
-        self.tableSV.setColumnCount(8) # Bỏ cột hình ảnh cho gọn bảng
+        self.tableSV.setColumnCount(8)
         self.tableSV.setHorizontalHeaderLabels([
             "Mã SV", "Họ Tên", "CMND/CCCD", "Giới Tính", "Ngày Sinh", "Email", "SĐT", "Khóa Học"
         ])
         self.tableSV.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableSV.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers) # Chặn sửa trực tiếp trên bảng
         self.tableSV.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.tableSV)
         
@@ -99,10 +89,7 @@ class UI_QuanLyChung(QtWidgets.QDialog):
     def load_data_sinhvien(self):
         self.tableSV.setRowCount(0)
         conn = self.db.Connect()
-        if not conn:
-            QtWidgets.QMessageBox.critical(self, "Lỗi DB", "Không thể kết nối đến cơ sở dữ liệu!")
-            return
-            
+        if not conn: return
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT masinhvien, hoten, cmnd, gioitinh, ngaysinh, email, sodienthoai, khoahoc FROM sinhvien")
@@ -116,10 +103,21 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         finally:
             conn.close()
 
-    def open_them_sinhvien(self):
-        dialog = ThemSinhVien.UI_ThemSinhVien()
-        dialog.exec()
-        self.load_data_sinhvien()
+    def edit_sinhvien(self):
+        row = self.tableSV.currentRow()
+        if row < 0:
+            QtWidgets.QMessageBox.warning(self, "Cảnh báo", "Vui lòng chọn một sinh viên để sửa!")
+            return
+            
+        masv = self.tableSV.item(row, 0).text()
+        hoten = self.tableSV.item(row, 1).text()
+        
+        # TODO: Chỗ này bạn sẽ gọi form SuaSinhVien của bạn lên và truyền `masv` sang
+        QtWidgets.QMessageBox.information(self, "Thông báo", f"Bạn đang chọn sửa sinh viên:\n- Mã: {masv}\n- Tên: {hoten}\n\n(Hãy thay dòng này bằng code mở Form Sửa của bạn)")
+        # Ví dụ: 
+        # dialog = SuaSinhVien.UI_SuaSinhVien(masv)
+        # dialog.exec()
+        # self.load_data_sinhvien()
 
     def delete_sinhvien(self):
         row = self.tableSV.currentRow()
@@ -144,7 +142,7 @@ class UI_QuanLyChung(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.information(self, "Thành công", "Đã xóa sinh viên!")
                 self.load_data_sinhvien()
             except Exception as e:
-                QtWidgets.QMessageBox.critical(self, "Lỗi", f"Không thể xóa. Có thể sinh viên này đang liên kết với bảng khác.\nChi tiết: {e}")
+                QtWidgets.QMessageBox.critical(self, "Lỗi", f"Không thể xóa.\nChi tiết: {e}")
             finally:
                 if conn: conn.close()
 
@@ -158,15 +156,16 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         btnTaiLai = QtWidgets.QPushButton("🔄 Tải lại danh sách")
         btnTaiLai.clicked.connect(self.load_data_giangvien)
         
-        btnThem = QtWidgets.QPushButton("➕ Thêm Giảng Viên")
-        btnThem.clicked.connect(self.open_them_giangvien)
+        btnSua = QtWidgets.QPushButton("✏️ Sửa Giảng Viên")
+        btnSua.clicked.connect(self.edit_giangvien)
+        btnSua.setStyleSheet("background-color: #2196F3; color: white; font-weight: bold;")
         
         btnXoa = QtWidgets.QPushButton("❌ Xóa Giảng Viên")
         btnXoa.clicked.connect(self.delete_giangvien)
         btnXoa.setStyleSheet("background-color: #f44336; color: white; font-weight: bold;")
         
         toolbar.addWidget(btnTaiLai)
-        toolbar.addWidget(btnThem)
+        toolbar.addWidget(btnSua)
         toolbar.addWidget(btnXoa)
         toolbar.addStretch()
         layout.addLayout(toolbar)
@@ -175,6 +174,7 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         self.tableGV.setColumnCount(4)
         self.tableGV.setHorizontalHeaderLabels(["Mã Giảng Viên", "Họ Tên", "Số Điện Thoại", "Mã Tài Khoản"])
         self.tableGV.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableGV.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.tableGV.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.tableGV)
         
@@ -198,10 +198,15 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         finally:
             conn.close()
 
-    def open_them_giangvien(self):
-        dialog = ThemGiangVien.UI_ThemGiangVien()
-        dialog.exec()
-        self.load_data_giangvien()
+    def edit_giangvien(self):
+        row = self.tableGV.currentRow()
+        if row < 0:
+            QtWidgets.QMessageBox.warning(self, "Cảnh báo", "Vui lòng chọn một giảng viên để sửa!")
+            return
+        magv = self.tableGV.item(row, 0).text()
+        
+        # TODO: Gọi form Sửa Giảng Viên
+        QtWidgets.QMessageBox.information(self, "Thông báo", f"Bạn đang chọn sửa Giảng viên mã: {magv}")
 
     def delete_giangvien(self):
         row = self.tableGV.currentRow()
@@ -236,15 +241,16 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         btnTaiLai = QtWidgets.QPushButton("🔄 Tải lại danh sách")
         btnTaiLai.clicked.connect(self.load_data_buoihoc)
         
-        btnThem = QtWidgets.QPushButton("➕ Thêm Buổi Học")
-        btnThem.clicked.connect(self.open_them_buoihoc)
+        btnSua = QtWidgets.QPushButton("✏️ Sửa Buổi Học")
+        btnSua.clicked.connect(self.edit_buoihoc)
+        btnSua.setStyleSheet("background-color: #2196F3; color: white; font-weight: bold;")
         
         btnXoa = QtWidgets.QPushButton("❌ Xóa Buổi Học")
         btnXoa.clicked.connect(self.delete_buoihoc)
         btnXoa.setStyleSheet("background-color: #f44336; color: white; font-weight: bold;")
         
         toolbar.addWidget(btnTaiLai)
-        toolbar.addWidget(btnThem)
+        toolbar.addWidget(btnSua)
         toolbar.addWidget(btnXoa)
         toolbar.addStretch()
         layout.addLayout(toolbar)
@@ -253,6 +259,7 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         self.tableBH.setColumnCount(5)
         self.tableBH.setHorizontalHeaderLabels(["Mã Buổi Học", "Giờ Bắt Đầu", "Giờ Kết Thúc", "Ngày", "Mã Giảng Viên"])
         self.tableBH.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableBH.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.tableBH.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.tableBH)
         
@@ -276,10 +283,15 @@ class UI_QuanLyChung(QtWidgets.QDialog):
         finally:
             conn.close()
 
-    def open_them_buoihoc(self):
-        dialog = ThemBuoiHoc.UI_ThemBuoiHoc()
-        dialog.exec()
-        self.load_data_buoihoc()
+    def edit_buoihoc(self):
+        row = self.tableBH.currentRow()
+        if row < 0:
+            QtWidgets.QMessageBox.warning(self, "Cảnh báo", "Vui lòng chọn một buổi học để sửa!")
+            return
+        mabh = self.tableBH.item(row, 0).text()
+        
+        # TODO: Gọi form Sửa Buổi Học
+        QtWidgets.QMessageBox.information(self, "Thông báo", f"Bạn đang chọn sửa Buổi học mã: {mabh}")
 
     def delete_buoihoc(self):
         row = self.tableBH.currentRow()
