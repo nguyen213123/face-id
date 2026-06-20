@@ -215,22 +215,41 @@ class UI_QuanLyChung(QtWidgets.QDialog):
             return
             
         magv = self.tableGV.item(row, 0).text()
-        reply = QtWidgets.QMessageBox.question(
-            self, 'Xác nhận', f'Bạn có chắc muốn xóa giảng viên ({magv})?',
-            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
-        )
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-            conn = self.db.Connect()
-            try:
-                cursor = conn.cursor()
+        
+        # 1. Lấy mataikhoan trước khi xóa giảng viên
+        conn = self.db.Connect()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT mataikhoan FROM giangvien WHERE magiangvien = ?", (magv,))
+            result = cursor.fetchone()
+            if not result:
+                QtWidgets.QMessageBox.warning(self, "Lỗi", "Không tìm thấy giảng viên này.")
+                return
+            
+            mataikhoan = result[0]
+            
+            reply = QtWidgets.QMessageBox.question(
+                self, 'Xác nhận', f'Bạn có chắc muốn xóa giảng viên ({magv}) và tài khoản liên quan?',
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
+            )
+            
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                # 2. Xóa giảng viên trước (để ngắt liên kết khóa ngoại)
                 cursor.execute("DELETE FROM giangvien WHERE magiangvien = ?", (magv,))
-                conn.commit()
+                
+                # 3. Xóa tài khoản
+                cursor.execute("DELETE FROM taikhoan WHERE mataikhoan = ?", (mataikhoan,))
+                
+                conn.commit() # Lưu thay đổi
+                QtWidgets.QMessageBox.information(self, "Thành công", "Đã xóa giảng viên và tài khoản!")
                 self.load_data_giangvien()
-            except Exception as e:
-                QtWidgets.QMessageBox.critical(self, "Lỗi", f"Không thể xóa giảng viên.\nChi tiết: {e}")
-            finally:
-                if conn: conn.close()
-
+                
+        except Exception as e:
+            conn.rollback() # Hoàn tác nếu có lỗi
+            QtWidgets.QMessageBox.critical(self, "Lỗi", f"Không thể xóa.\nChi tiết: {e}")
+        finally:
+            if conn: conn.close()
+            
     # =========================================================
     # TAB 3: QUẢN LÝ BUỔI HỌC
     # =========================================================

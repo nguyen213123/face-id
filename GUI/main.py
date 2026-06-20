@@ -10,6 +10,7 @@ import ThemBuoiHoc
 import ThemGiangVien
 import ThemSinhVien
 import QuanLyChung
+import LichDay
 
 # Tự động import thêm các module bổ trợ nếu có trong dự án
 try:
@@ -129,7 +130,8 @@ class mainGUI:
             ("btnCamera", "📹 Camera Streams", lambda: self.QuanLyCamera_UI(MainWindow)),
             ("btnThemSV", "👤 Thêm Sinh Viên Mới", lambda: self.ThemSinhVien_UI(MainWindow)),
             ("btnThemGiangVien", "➕ Thêm Giảng Viên", lambda: self.QuanLyNguoiDung_UI(MainWindow)),
-            ("btnThemBuoiHoc", "📚 Thêm Buổi Học Mới", lambda: self.ThemBuoiHoc_UI(MainWindow))
+            ("btnThemBuoiHoc", "📚 Thêm Buổi Học Mới", lambda: self.ThemBuoiHoc_UI(MainWindow)),
+            ("btnLichDay", "🗓️ Lịch Dạy & Lớp Học", lambda: self.LichDayGV_UI(MainWindow))
             
         ]
         
@@ -156,6 +158,15 @@ class mainGUI:
                 self.btnThemGiangVien, 
                 self.btnThemSV, 
                 self.btnThemBuoiHoc
+            ]
+        elif current_permission in ['GV']:
+            # QUYỀN GIẢNG VIÊN (GV)
+            allowed_buttons = [
+                self.btnLichDay,      # Cho phép GV xem lịch và thêm sinh viên vào buổi học
+                self.btnThemSV,       # Cấp quyền thêm sinh viên mới cho GV như Admin
+                self.btnNhanDien,     # GV bật nhận diện điểm danh
+                self.btnDiemDanh,     # Xem danh sách điểm danh
+                self.btnThongKe       # Thống kê lớp của GV
             ]
         else:
             # Danh sách nút cho User
@@ -308,6 +319,13 @@ class mainGUI:
             self.dialog_them_buoi.exec()
         except Exception as e:
          print("Lỗi khi mở form:", e)
+
+    def LichDayGV_UI(self, MainWindow):
+        try:
+            self.dialog_lich = LichDay.UI_LichDay(self.email) # Truyền email người đăng nhập
+            self.dialog_lich.exec()
+        except Exception as e:
+          print("Lỗi khi mở form Lịch Dạy:", e)
 
     def checkFunctionInPermission(self, maquyen):
         """Xử lý ẩn/hiện các nút tính năng dựa vào mã quyền của tài khoản đăng nhập"""
