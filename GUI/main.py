@@ -9,6 +9,7 @@ import qdarkstyle
 import ThemBuoiHoc
 import ThemGiangVien
 import ThemSinhVien
+import QuanLyChung
 
 # Tự động import thêm các module bổ trợ nếu có trong dự án
 try:
@@ -122,7 +123,7 @@ class mainGUI:
             ("btnNhanDien", "📸 Nhận Diện Khuôn Mặt", lambda: self.NhanDien_UI(MainWindow)),
             ("btnDiemDanh", "📋 Quản Lý Điểm Danh", lambda: self.QuanLyDiemDanh_UI(MainWindow)),
             ("btnThongKe", "📊 Thống Kê Hệ Thống", lambda: self.ThongKe_UI(MainWindow)),
-            ("btnUserMgmt", "👥 Quản Lý Người Dùng\n(Thêm, Xóa, Sửa)", lambda: self.QuanLyNguoiDung_UI(MainWindow)),
+            ("btnQuanLyChung", "⚙️ Quản Lý Dữ Liệu\n(SV, GV, Buổi học)", lambda: self.QuanLyChung_UI(MainWindow)),
             ("btnFaceData", "⚙️ Face Data Train", lambda: self.DuLieuKhuonMat_UI(MainWindow)),
             ("btnSchedule", "📅 Schedule & Shifts", lambda: self.QuanLyLichTrinh_UI(MainWindow)),
             ("btnCamera", "📹 Camera Streams", lambda: self.QuanLyCamera_UI(MainWindow)),
@@ -151,6 +152,7 @@ class mainGUI:
         if current_permission == 'Admin':
             # Danh sách nút cho Admin
             allowed_buttons = [
+                self.btnQuanLyChung,
                 self.btnThemGiangVien, 
                 self.btnThemSV, 
                 self.btnThemBuoiHoc
@@ -193,7 +195,14 @@ class mainGUI:
             self.dialog_sv.exec()
         except Exception as e:
             print("Lỗi khi mở form thêm sinh viên:", e)
-            
+
+    def QuanLyChung_UI(self, MainWindow):
+        try:
+            self.dialog_ql = QuanLyChung.UI_QuanLyChung()
+            self.dialog_ql.exec()
+        except Exception as e:
+            print("Lỗi khi mở form quản lý chung:", e)
+
     def showMinimized(self):
         if hasattr(self, 'MainWindow'):
             self.MainWindow.showMinimized()
