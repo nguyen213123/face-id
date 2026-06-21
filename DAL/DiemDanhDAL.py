@@ -113,6 +113,59 @@ class DiemDanhDAL:
             cursor.close()
             conn.close()
         return False
+    
+
+    @staticmethod
+    def thongKeSiSoTheoBuoi(mabuoihoc):
+        query = """
+            SELECT 
+                (SELECT COUNT(masinhvien) FROM ChiTietBuoiHoc WHERE mabuoihoc = %s) AS TongSiSo,
+                (SELECT COUNT(DISTINCT masinhvien) FROM diemdanh WHERE mabuoihoc = %s) AS CoMat
+        """
+        data = (mabuoihoc, mabuoihoc)
+        try:
+            connDb = ConnectDatabase()
+            conn = connDb.Connect()
+            cursor = conn.cursor()
+            cursor.execute(query, data)
+            row = cursor.fetchone()
+            if row:
+                tong = row[0] if row[0] is not None else 0
+                comat = row[1] if row[1] is not None else 0
+                return {"Tong": tong, "CoMat": comat, "Vang": tong - comat}
+        except Exception as ex:
+            print("Lỗi thống kê sĩ số theo buổi học:", ex)
+        finally:
+            cursor.close()
+            conn.close()
+        return {"Tong": 0, "CoMat": 0, "Vang": 0}
+
+    @staticmethod
+    def layDanhSachHocSinhTheoBuoi(mabuoihoc):
+        query = """
+            SELECT 
+                s.masinhvien, 
+                s.hoten,
+                CASE WHEN dd.masinhvien IS NOT NULL THEN 'Có mặt' ELSE 'Vắng' END AS trangthai
+            FROM ChiTietBuoiHoc ct
+            JOIN sinhvien s ON ct.masinhvien = s.masinhvien
+            LEFT JOIN diemdanh dd ON ct.mabuoihoc = dd.mabuoihoc AND ct.masinhvien = dd.masinhvien
+            WHERE ct.mabuoihoc = %s
+        """
+        list_sv = []
+        try:
+            connDb = ConnectDatabase()
+            conn = connDb.Connect()
+            cursor = conn.cursor()
+            cursor.execute(query, (mabuoihoc,))
+            list_sv = cursor.fetchall()
+        except Exception as ex:
+            print("Lỗi lấy danh sách học sinh theo buổi:", ex)
+        finally:
+            cursor.close()
+            conn.close()
+        return list_sv
+    
     def delete(id):
         query = "DELETE FROM diemdanh WHERE madiemdanh = '{}'".format(id)
         try:

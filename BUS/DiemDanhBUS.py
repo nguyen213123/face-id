@@ -7,6 +7,11 @@ from DAL.DiemDanh import DiemDanh
 from DAL.SinhVien import SinhVien
 
 class DiemDanhBUS:
+    def thongKeSiSoTheoBuoi(self, mabuoihoc):
+        return DiemDanhDAL.thongKeSiSoTheoBuoi(mabuoihoc)
+
+    def layDanhSachHocSinhTheoBuoi(self, mabuoihoc):
+        return DiemDanhDAL.layDanhSachHocSinhTheoBuoi(mabuoihoc)
     def get(self):
         return DiemDanhDAL.get()
     def generateID(self):

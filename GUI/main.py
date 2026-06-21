@@ -276,16 +276,27 @@ class mainGUI:
         MainWindow.show()
 
     def QuanLyDiemDanh_UI(self, MainWindow):
-        self.ui = QuanLyDiemDanh.UI_QuanLyDiemDanh()
+        # Truyền self.email vào form điểm danh
+        self.ui = QuanLyDiemDanh.UI_QuanLyDiemDanh(self.email)
         self.MainWindow = MainWindow
         self.ui.setupUi(MainWindow)
-        if hasattr(self.ui, 'btnMinimize'): self.ui.btnMinimize.clicked.connect(self.showMinimized)
-        if hasattr(self.ui, 'btnClose'): self.ui.btnClose.clicked.connect(lambda: sys.exit(self.app.exit()))
-        if hasattr(self.ui, 'btnBack'): self.ui.btnBack.clicked.connect(lambda: self.back_to_home(MainWindow))
-        self.ChangeStyleDarkMode()
-        if hasattr(self.ui, 'btnDark'): self.ui.btnDark.clicked.connect(self.ChangeDarkMode_UI)
-        MainWindow.show()
 
+        # Kết nối các nút điều hướng
+        if hasattr(self.ui, 'btnMinimize'): 
+            self.ui.btnMinimize.clicked.connect(self.showMinimized)
+        
+        # Cập nhật kết nối cho nút X
+        if hasattr(self.ui, 'btnX'): 
+            self.ui.btnX.clicked.connect(lambda: sys.exit(self.app.exit()))
+            
+        if hasattr(self.ui, 'btnBack'): 
+            self.ui.btnBack.clicked.connect(lambda: self.back_to_home(MainWindow))
+        
+        self.ChangeStyleDarkMode()
+        if hasattr(self.ui, 'btnDark'): 
+            self.ui.btnDark.clicked.connect(self.ChangeDarkMode_UI)
+        MainWindow.show()  
+        
     def TaiKhoan_UI(self, MainWindow):
         if 'QuanLyTaiKhoan' in sys.modules:
             self.ui = QuanLyTaiKhoan.UI_QuanLyTaiKhoan()
